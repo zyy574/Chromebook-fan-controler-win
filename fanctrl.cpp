@@ -33,9 +33,11 @@ int get_temp(){
 			break;
 		}
 	}*/
-	temp_string=output.substr(129,2);
-	//cout<<temp_string;
-	temp=stoi(temp_string,0,10);
+	/*temp_string=output.substr(129,2);
+	cout<<temp_string;
+	temp=stoi(temp_string,0,10);//old*/
+	temp=output[120]*100+output[121]*10+output[122]-5601;
+	//cout<<temp;
 	return temp;
 	
 }
