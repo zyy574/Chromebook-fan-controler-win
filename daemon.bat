@@ -1,7 +1,7 @@
 @echo off
  
 ::检测时间间隔，单位：秒
-set _interval=5
+set _interval=60
 ::需要守护的进程名称
 set _processName=fanctrl.exe
  
