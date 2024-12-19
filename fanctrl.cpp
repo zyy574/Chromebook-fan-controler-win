@@ -55,7 +55,7 @@ void fanctrl(){
 	//cout<<temp_low<<endl<<temp_high;
 	//int error=0;
 	while(endpro==0){
-		Sleep(2000);
+		Sleep(5000);
 		int temp=get_temp();
 		//cout<<temp;
 		if(temp<=temp_low&&fan){
