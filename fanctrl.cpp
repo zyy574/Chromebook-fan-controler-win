@@ -7,6 +7,7 @@
 static bool endpro=0;
 static int temp_low=45;
 static int temp_high=50;
+static int max_batt=80;
 //#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" ) // hide
 using namespace std;
 string cmdPopen(const string& cmdLine) {
@@ -77,16 +78,33 @@ void fanctrl(){
 
 void batteryctrl(){
 	SYSTEM_POWER_STATUS powerStatus;
+	bool idle=0;
+	system("\"C:\\Program Files\\crosec\\ectool.exe\" chargecontrol normal");
 	while(endpro==0){
 		if(!GetSystemPowerStatus(&powerStatus)){
 			system("\"C:\\Program Files\\crosec\\ectool.exe\" chargecurrentlimit 3400");
-			Sleep(1800000);
-			continue;
+			Sleep(1800000-300000);
 		}
-		string output = cmdPopen("\"C:\\Program Files\\crosec\\ectool.exe\" battery");
-		int a=((output[207]-'0')*1000+(output[208]-'0')*100+(output[209]-'0')*10);
-		int b=((output[373]-'0')*1000+(output[374]-'0')*100+(output[375]-'0')*10);
-		system(("\"C:\\Program Files\\crosec\\ectool.exe\" chargecurrentlimit "+to_string(a-b)).c_str());
+		else{
+			string output = cmdPopen("\"C:\\Program Files\\crosec\\ectool.exe\" battery");
+			int a=((output[207]-'0')*1000+(output[208]-'0')*100+(output[209]-'0')*10);
+			int b=((output[373]-'0')*1000+(output[374]-'0')*100+(output[375]-'0')*10);
+			system(("\"C:\\Program Files\\crosec\\ectool.exe\" chargecurrentlimit "+to_string(a-b)).c_str());
+			if(100.0*b/a>max_batt){
+				if(!idle){
+					system("\"C:\\Program Files\\crosec\\ectool.exe\" chargecontrol idle");
+					idle=1;
+					Sleep(1800000-300000);
+				}
+			}
+			else{
+				if(idle){
+					system("\"C:\\Program Files\\crosec\\ectool.exe\" chargecontrol normal");
+					idle=0;
+				}
+			}
+			
+		}
 		Sleep(300000);
 	}
 }
@@ -124,6 +142,10 @@ int main(){
 		temp_low=cfg[1];
 		temp_high=cfg[2];
 	}
+	if(cfg[3]>50&&cfg[3]<=100){
+		max_batt=cfg[3];
+	}	
+	
 	//cout<<temp_low<<endl<<temp_high;
 	HWND hwnd;
 	hwnd=FindWindow("ConsoleWindowClass",NULL);	//处理顶级窗口的类名和窗口名称匹配指定的字符串,不搜索子窗口。
